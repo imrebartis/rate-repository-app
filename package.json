@@ -6,7 +6,9 @@
     "start": "npx expo start",
     "android": "npx expo start --android",
     "ios": "expo start --ios",
-    "web": "npx expo start --web"
+    "web": "npx expo start --web",
+    "lint": "eslint ./src/**/*.{js,jsx} App.js --no-error-on-unmatched-pattern",
+    "lint:fix": "eslint ./src/**/*.{js,jsx} App.js --fix --no-error-on-unmatched-pattern"
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.1.1",
@@ -18,7 +20,11 @@
     "react-native-web": "~0.19.6"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "@babel/eslint-parser": "^7.25.1",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.36.1",
+    "eslint-plugin-react-native": "^4.1.0"
   },
   "private": true
 }
