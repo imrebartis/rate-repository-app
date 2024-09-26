@@ -3,10 +3,14 @@ import { useState, useEffect } from 'react';
 import RepositoryItem from './RepositoryItem';
 import Loading from './Loading';
 import Error from './Error';
+import theme from '../theme';
 
 const styles = StyleSheet.create({
   separator: {
     height: 10
+  },
+  container: {
+    backgroundColor: theme.colors.backgroundSecondary
   }
 });
 
@@ -93,6 +97,7 @@ const RepositoryList = () => {
 
   return (
     <FlatList
+      style={styles.container}
       data={data}
       ItemSeparatorComponent={ItemSeparator}
       renderItem={({ item }) => <RepositoryItem item={item} />}
