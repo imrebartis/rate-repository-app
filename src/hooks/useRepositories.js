@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Constants from 'expo-constants';
 
 const useRepositories = () => {
   const [repositories, setRepositories] = useState();
@@ -6,7 +7,7 @@ const useRepositories = () => {
   const [error, setError] = useState();
 
   const fetchRepositories = async () => {
-    const response = await fetch('http://192.168.109.106:5000/api/repositories');
+    const response = await fetch(`${Constants.expoConfig.extra.APOLLO_URI}:5000/api/repositories`);
     const json = await response.json();
 
     console.log(json);
