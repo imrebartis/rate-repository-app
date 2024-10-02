@@ -66,6 +66,12 @@ const SignInForm = ({ onSubmit }) => {
     return [styles.input, hasError && styles.errorInput];
   };
 
+  const handleKeyPress = (event) => {
+    if (event.nativeEvent.key === 'Enter') {
+      formik.handleSubmit();
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -75,6 +81,7 @@ const SignInForm = ({ onSubmit }) => {
         value={formik.values.username}
         placeholder='Username'
         placeholderTextColor={theme.colors.secondary}
+        onKeyPress={handleKeyPress}
       />
       {formik.touched.username && formik.errors.username && (
         <Text color='tertiary'>{formik.errors.username}</Text>
@@ -87,6 +94,7 @@ const SignInForm = ({ onSubmit }) => {
         placeholder='Password'
         placeholderTextColor={theme.colors.secondary}
         secureTextEntry
+        onKeyPress={handleKeyPress}
       />
       {formik.touched.password && formik.errors.password && (
         <Text color='tertiary'>{formik.errors.password}</Text>
