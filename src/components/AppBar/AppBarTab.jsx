@@ -1,5 +1,4 @@
-import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Link } from 'react-router-native';
 import Text from '../Text';
 
@@ -9,16 +8,18 @@ const styles = StyleSheet.create({
   }
 });
 
-const AppBarTab = ({ to, text }) => (
-  <Link to={to}
-    component={Pressable}
-    style={styles.container}>
-    <Text fontSize='subheading'
-      fontWeight='bold'
-      color='textWhite'>
-      {text}
-    </Text>
-  </Link>
-);
+const AppBarTab = ({ to, text, onPress }) => {
+  return (
+    <Link to={to}
+      onPress={onPress}
+      style={styles.container}>
+      <Text fontSize='subheading'
+        fontWeight='bold'
+        color='textWhite'>
+        {text}
+      </Text>
+    </Link>
+  );
+};
 
 export default AppBarTab;
