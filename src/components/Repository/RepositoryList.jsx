@@ -17,9 +17,7 @@ const styles = StyleSheet.create({
 
 const ItemSeparator = () => <View style={styles.separator} />;
 
-const RepositoryList = () => {
-  const { data, error, loading } = useQuery(GET_REPOSITORIES);
-
+export const RepositoryListContainer = ({ data, error, loading }) => {
   if (loading) {
     return <Loading />;
   }
@@ -41,6 +39,16 @@ const RepositoryList = () => {
       keyExtractor={(item) => item.id}
     />
   );
+};
+
+const RepositoryList = () => {
+  const { data, error, loading } = useQuery(GET_REPOSITORIES, {
+    fetchPolicy: 'cache-and-network'
+  });
+
+  return <RepositoryListContainer data={data}
+    error={error}
+    loading={loading} />;
 };
 
 export default RepositoryList;
