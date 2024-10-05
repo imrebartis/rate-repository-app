@@ -1,6 +1,5 @@
 import { render, screen, within } from '@testing-library/react-native';
 import { RepositoryListContainer } from '../components/Repository/RepositoryList';
-import '@testing-library/jest-native/extend-expect';
 
 const formatCount = (count) => {
   return count > 1000 ? `${(count / 1000).toFixed(1)}k` : count.toString();
