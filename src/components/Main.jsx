@@ -4,6 +4,7 @@ import RepositoryList from './Repository/RepositoryList';
 import AppBar from './AppBar/AppBar';
 import SignIn from './SignIn';
 import theme from '../theme';
+import SingleRepository from './Repository/SingleRepository';
 
 const styles = StyleSheet.create({
   container: {
@@ -23,6 +24,8 @@ const Main = () => {
         <Route path="/"
           element={<RepositoryList />}
           exact />
+        <Route path="/:id"
+          element={<SingleRepository />} />
         <Route path="*"
           element={<Navigate to="/"
             replace />} />
