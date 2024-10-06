@@ -1,7 +1,12 @@
-import { Text } from 'react-native';
+import Text from './Text';
 
 const Error = ({ error }) => {
-  return <Text>{error}</Text>;
+  return (
+    <Text color='tertiary'
+      fontWeight='bold'>
+      {error}
+    </Text>
+  );
 };
 
 export default Error;

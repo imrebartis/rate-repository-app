@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from '../Text';
 
@@ -55,4 +56,4 @@ const RepositoryStats = ({ item }) => {
   );
 };
 
-export default RepositoryStats;
+export default memo(RepositoryStats);

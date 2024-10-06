@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import Text from './Text';
 
 const Loading = () => {
   return <Text>Loading...</Text>;

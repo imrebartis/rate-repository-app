@@ -1,3 +1,4 @@
+import React, { useState, useCallback } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -5,6 +6,7 @@ import theme from '../theme';
 import Text from './Text';
 import useSignIn from '../hooks/useSignIn';
 import Button from './Button';
+import Error from './Error';
 
 const styles = StyleSheet.create({
   container: {
@@ -54,51 +56,70 @@ const validationSchema = yup.object().shape({
     })
 });
 
-export const SignInForm = ({ onSubmit }) => {
+export const SignInForm = ({ onSubmit, signInError, clearSignInError }) => {
   const formik = useFormik({
     initialValues,
     validationSchema,
     onSubmit
   });
 
-  const getInputStyle = (fieldName) => {
-    const hasError = formik.touched[fieldName] && formik.errors[fieldName];
-    return [styles.input, hasError && styles.errorInput];
-  };
+  const getInputStyle = useCallback(
+    (fieldName) => {
+      const hasError = formik.touched[fieldName] && formik.errors[fieldName];
+      return [styles.input, hasError && styles.errorInput];
+    },
+    [formik.touched, formik.errors]
+  );
 
-  const handleKeyPress = (event) => {
-    if (event.nativeEvent.key === 'Enter') {
-      formik.handleSubmit();
-    }
-  };
+  const handleKeyPress = useCallback(
+    (event) => {
+      if (event.nativeEvent.key === 'Enter') {
+        formik.handleSubmit();
+      }
+    },
+    [formik.handleSubmit]
+  );
+
+  const handleInputChange = useCallback(
+    (fieldName) => (text) => {
+      if (signInError) {
+        clearSignInError();
+      }
+      formik.handleChange(fieldName)(text);
+    },
+    [formik.handleChange, signInError, clearSignInError]
+  );
 
   return (
     <View style={styles.container}>
       <TextInput
         style={getInputStyle('username')}
-        onChangeText={formik.handleChange('username')}
+        onChangeText={handleInputChange('username')}
         onBlur={formik.handleBlur('username')}
         value={formik.values.username}
         placeholder='Username'
         placeholderTextColor={theme.colors.secondary}
         onKeyPress={handleKeyPress}
+        accessibilityLabel='Username'
       />
       {formik.touched.username && formik.errors.username && (
         <Text color='tertiary'>{formik.errors.username}</Text>
       )}
       <TextInput
         style={getInputStyle('password')}
-        onChangeText={formik.handleChange('password')}
+        onChangeText={handleInputChange('password')}
         onBlur={formik.handleBlur('password')}
         value={formik.values.password}
         placeholder='Password'
         placeholderTextColor={theme.colors.secondary}
         secureTextEntry
         onKeyPress={handleKeyPress}
+        accessibilityLabel='Password'
       />
       {formik.touched.password && formik.errors.password && (
         <Text color='tertiary'>{formik.errors.password}</Text>
       )}
+      {signInError && <Error error={signInError} />}
       <Button onPress={formik.handleSubmit}
         title='Sign in' />
     </View>
@@ -107,6 +128,11 @@ export const SignInForm = ({ onSubmit }) => {
 
 const SignIn = () => {
   const [signIn] = useSignIn();
+  const [signInError, setSignInError] = useState(null);
+
+  const clearSignInError = useCallback(() => {
+    setSignInError(null);
+  }, []);
 
   const onSubmit = async (values) => {
     const { username, password } = values;
@@ -114,12 +140,19 @@ const SignIn = () => {
     try {
       const { authenticate } = await signIn({ username, password });
       console.log('Access Token:', authenticate.accessToken);
+      setSignInError(null);
     } catch (e) {
-      console.log(e);
+      setSignInError(e.message);
     }
   };
 
-  return <SignInForm onSubmit={onSubmit} />;
+  return (
+    <SignInForm
+      onSubmit={onSubmit}
+      signInError={signInError}
+      clearSignInError={clearSignInError}
+    />
+  );
 };
 
 export default SignIn;

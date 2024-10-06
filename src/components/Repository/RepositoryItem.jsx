@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, StyleSheet, Linking } from 'react-native';
 import theme from '../../theme';
 import RepositoryHeader from './RepositoryHeader';
@@ -30,4 +31,4 @@ const RepositoryItem = ({ item, showGitHubLinkButton }) => {
   );
 };
 
-export default RepositoryItem;
+export default memo(RepositoryItem);

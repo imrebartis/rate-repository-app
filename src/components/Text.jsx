@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Text as NativeText, StyleSheet, Platform } from 'react-native';
 import theme from '../theme';
 
@@ -52,4 +53,4 @@ const Text = ({ color, fontSize, fontWeight, background, style, ...props }) => {
     {...props} />;
 };
 
-export default Text;
+export default memo(Text);

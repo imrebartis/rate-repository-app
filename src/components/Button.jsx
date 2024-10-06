@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import theme from '../theme';
 import Text from './Text';
@@ -26,4 +26,4 @@ const Button = ({ onPress, title }) => {
   );
 };
 
-export default Button;
+export default memo(Button);

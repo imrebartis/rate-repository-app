@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from '../Text';
 import theme from '../../theme';
@@ -22,4 +23,4 @@ const LanguageTag = ({ language }) => {
   );
 };
 
-export default LanguageTag;
+export default memo(LanguageTag);

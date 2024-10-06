@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import Text from '../Text';
 import LanguageTag from './LanguageTag';
@@ -28,10 +29,11 @@ const styles = StyleSheet.create({
 const RepositoryHeader = ({ item }) => {
   return (
     <View style={styles.row}>
-      <Image source={{ uri: item.ownerAvatarUrl }}
-        style={styles.avatar} />
+      <Image style={styles.avatar}
+        source={{ uri: item.ownerAvatarUrl }} />
       <View style={styles.detailsContainer}>
         <Text fontWeight='bold'
+          fontSize='subheading'
           style={styles.text}>
           {item.fullName}
         </Text>
@@ -45,4 +47,4 @@ const RepositoryHeader = ({ item }) => {
   );
 };
 
-export default RepositoryHeader;
+export default memo(RepositoryHeader);
