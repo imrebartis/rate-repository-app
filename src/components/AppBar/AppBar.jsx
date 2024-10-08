@@ -33,6 +33,10 @@ const AppBar = () => {
         <AppBarTab to='/'
           text='Repositories' />
         {data?.me ? (
+          <AppBarTab to='/create-review'
+            text='Create a Review' />
+        ) : null}
+        {data?.me ? (
           <AppBarTab to='/signin'
             text='Sign Out'
             onPress={handleSignOut} />

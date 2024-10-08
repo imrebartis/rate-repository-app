@@ -8,7 +8,8 @@ const theme = {
     tertiary: '#d73a4a',
     backgroundPrimary: '#24292e',
     backgroundSecondary: '#e1e4e8',
-    backgroundWhite: '#ffffff'
+    backgroundWhite: '#ffffff',
+    backgroundSuccess: '#28a745',
   },
   fontSizes: {
     body: 14,
