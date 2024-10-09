@@ -8,6 +8,7 @@ import theme from '../theme';
 import SingleRepository from './Repository/SingleRepository';
 import ReviewForm from './ReviewForm';
 import Notify from './Notify';
+import SignUp from './SignUp';
 
 const styles = StyleSheet.create({
   container: {
@@ -29,20 +30,24 @@ const Main = () => {
 
   return (
     <View style={styles.container}>
-      <AppBar />
+      <AppBar setSuccess={notifySuccess} />
       <Notify message={successMessage} />
       <Routes>
-        <Route path="/signin"
-          element={<SignIn />} />
-        <Route path="/"
+        <Route path='/signin'
+          element={<SignIn setSuccess={notifySuccess} />} />
+        <Route path='/'
           element={<RepositoryList />}
           exact />
-        <Route path="/:id"
+        <Route path='/:id'
           element={<SingleRepository />} />
-        <Route path="/create-review"
-          element={<ReviewForm setSuccess={notifySuccess} />} />
-        <Route path="*"
-          element={<Navigate to="/"
+        <Route
+          path='/create-review'
+          element={<ReviewForm setSuccess={notifySuccess} />}
+        />
+        <Route path='/signup'
+          element={<SignUp setSuccess={notifySuccess} />} />
+        <Route path='*'
+          element={<Navigate to='/'
             replace />} />
       </Routes>
     </View>

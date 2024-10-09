@@ -9,10 +9,6 @@ const useCreateReview = () => {
   const navigate = useNavigate();
 
   const createReview = async ({ repositoryName, ownerName, rating, text }) => {
-    if (!authStorage) {
-      throw new Error('Authentication storage is not available');
-    }
-
     const accessToken = await authStorage.getAccessToken();
     const review = { repositoryName, ownerName, rating: Number(rating), text };
 
@@ -26,33 +22,24 @@ const useCreateReview = () => {
         }
       });
 
-      if (data) {
+      if (data?.createReview?.repositoryId) {
         navigate(`/repository/${data.createReview.repositoryId}`);
+        return data;
+      } else {
+        throw new Error('Received invalid response from server');
       }
-
-      return data;
     } catch (error) {
-      if (error.graphQLErrors) {
+      if (error.graphQLErrors?.length > 0) {
+        console.error('GraphQL errors:', error.graphQLErrors);
         const graphQLError = error.graphQLErrors[0];
-        if (
-          graphQLError.message === 'User has already reviewed this repository'
-        ) {
-          throw new Error('You have already reviewed this repository.');
-        }
-        if (
-          graphQLError.message.includes('GitHub repository') &&
-          graphQLError.message.includes('does not exist')
-        ) {
-          throw new Error('The specified GitHub repository does not exist.');
-        }
-      }
-
-      if (error.networkError) {
+        throw new Error(graphQLError.message);
+      } else if (error.networkError) {
+        console.error('Network error:', error.networkError);
         throw new Error('Network error occurred. Please try again.');
+      } else {
+        console.error('Unexpected error:', error);
+        throw new Error('An unexpected error occurred. Please try again.');
       }
-
-      console.log(error);
-      throw new Error('Failed to create review.');
     }
   };
 

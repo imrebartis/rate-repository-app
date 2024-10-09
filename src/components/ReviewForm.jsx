@@ -1,104 +1,48 @@
-import { useState, useCallback } from 'react';
-import { View, ScrollView } from 'react-native';
-import { useFormik } from 'formik';
 import * as yup from 'yup';
-import Button from './Button';
-import { useNavigate } from 'react-router-native';
 import useCreateReview from '../hooks/useCreateReview';
-import formStyles from '../utils/formStyles';
-import FormInput from './FormInput';
-
-const initialValues = {
-  repositoryName: '',
-  ownerName: '',
-  rating: '',
-  text: ''
-};
-
-const validationSchema = yup.object().shape({
-  repositoryName: yup.string().required('Repository name is required'),
-  ownerName: yup.string().required('Owner name is required'),
-  rating: yup
-    .number()
-    .required('Rating is required')
-    .min(0, 'Rating must be between 0 and 100')
-    .max(100, 'Rating must be between 0 and 100'),
-  text: yup.string()
-});
+import BaseForm from './BaseForm';
 
 const ReviewForm = ({ setSuccess }) => {
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
   const [createReview] = useCreateReview();
 
-  const onSubmit = async (values) => {
-    const { repositoryName, ownerName, rating, text } = values;
-    try {
-      await createReview({ repositoryName, ownerName, rating, text });
-      setError(null);
-      setSuccess('Review created successfully');
-      navigate('/');
-    } catch (e) {
-      setError(e.message);
-    }
-  };
+  const fields = [
+    { name: 'repositoryName', placeholder: 'Repository name' },
+    { name: 'ownerName', placeholder: 'Owner name' },
+    {
+      name: 'rating',
+      placeholder: 'Rating between 0 and 100',
+      inputMode: 'numeric'
+    },
+    { name: 'text', placeholder: 'Review', multiline: true }
+  ];
 
-  const formik = useFormik({
-    initialValues,
-    validationSchema,
-    onSubmit
+  const validationSchema = yup.object().shape({
+    repositoryName: yup.string().required('Repository name is required'),
+    ownerName: yup.string().required('Owner name is required'),
+    rating: yup
+      .number()
+      .typeError('Rating must be a number between 0 and 100')
+      .required('Rating is required')
+      .min(0, 'Rating must be between 0 and 100')
+      .max(100, 'Rating must be between 0 and 100'),
+    text: yup.string()
   });
 
-  const handleInputChange = useCallback(
-    (fieldName) => (text) => {
-      if (error) {
-        setError(null);
-      }
-      formik.handleChange(fieldName)(text);
-    },
-    [formik.handleChange, error]
-  );
-
   return (
-    <ScrollView
-      style={formStyles.scrollContainer}
-      contentContainerStyle={formStyles.container}
-    >
-      <FormInput
-        field='repositoryName'
-        form={formik}
-        placeholder='Repository name'
-        onChangeText={handleInputChange('repositoryName')}
-      />
-
-      <FormInput
-        field='ownerName'
-        form={formik}
-        placeholder='Owner name'
-        onChangeText={handleInputChange('ownerName')}
-      />
-
-      <FormInput
-        field='rating'
-        form={formik}
-        placeholder='Rating'
-        inputMode='numeric'
-        onChangeText={handleInputChange('rating')}
-      />
-
-      <FormInput
-        field='text'
-        form={formik}
-        placeholder='Review'
-        multiline
-        onChangeText={handleInputChange('text')}
-      />
-
-      <View style={formStyles.buttonContainer}>
-        <Button onPress={formik.handleSubmit}
-          title='Create a review' />
-      </View>
-    </ScrollView>
+    <BaseForm
+      initialValues={{
+        repositoryName: '',
+        ownerName: '',
+        rating: '',
+        text: ''
+      }}
+      validationSchema={validationSchema}
+      onSubmit={createReview}
+      fields={fields}
+      submitButtonText='Create a review'
+      setSuccess={setSuccess}
+      scrollable
+    />
   );
 };
 

@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
   }
 });
 
-const AppBar = () => {
+const AppBar = ({ setSuccess }) => {
   const { data } = useQuery(GET_USER);
   const authStorage = useAuthStorage();
   const apolloClient = useApolloClient();
@@ -25,6 +25,7 @@ const AppBar = () => {
   const handleSignOut = async () => {
     await authStorage.removeAccessToken();
     apolloClient.resetStore();
+    setSuccess('Signed out succesfully');
   };
 
   return (
@@ -44,6 +45,10 @@ const AppBar = () => {
           <AppBarTab to='/signin'
             text='Sign In' />
         )}
+        {!data?.me ? (
+          <AppBarTab to='/signup'
+            text='Sign Up' />
+        ) : null}
       </ScrollView>
     </View>
   );
