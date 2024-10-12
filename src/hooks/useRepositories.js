@@ -1,60 +1,68 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_REPOSITORIES } from '../graphql/queries';
+import { useDebounce } from 'use-debounce';
 
-const useRepositories = () => {
+const useRepositories = (initialSearchQuery = '') => {
   const [orderBy, setOrderBy] = useState('CREATED_AT');
   const [orderDirection, setOrderDirection] = useState('DESC');
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
   const { data, loading, error, refetch } = useQuery(GET_REPOSITORIES, {
     variables: {
       orderBy,
-      orderDirection
+      orderDirection,
+      searchKeyword: debouncedSearchQuery
     },
     fetchPolicy: 'cache-and-network'
   });
 
-  const setSorting = useCallback(async (newSorting) => {
-    let newOrderBy, newOrderDirection;
+  useEffect(() => {
+    refetch({
+      orderBy,
+      orderDirection,
+      searchKeyword: debouncedSearchQuery
+    });
+  }, [debouncedSearchQuery, orderBy, orderDirection, refetch]);
 
-    switch (newSorting) {
-    case 'LATEST':
-      newOrderBy = 'CREATED_AT';
-      newOrderDirection = 'DESC';
-      break;
-    case 'HIGHEST_RATED':
-      newOrderBy = 'RATING_AVERAGE';
-      newOrderDirection = 'DESC';
-      break;
-    case 'LOWEST_RATED':
-      newOrderBy = 'RATING_AVERAGE';
-      newOrderDirection = 'ASC';
-      break;
-    default:
-      newOrderBy = 'CREATED_AT';
-      newOrderDirection = 'DESC';
-    }
+  const sortingOptions = {
+    LATEST: { orderBy: 'CREATED_AT', orderDirection: 'DESC' },
+    HIGHEST_RATED: { orderBy: 'RATING_AVERAGE', orderDirection: 'DESC' },
+    LOWEST_RATED: { orderBy: 'RATING_AVERAGE', orderDirection: 'ASC' }
+  };
 
-    setOrderBy(newOrderBy);
-    setOrderDirection(newOrderDirection);
+  const setSorting = useCallback(
+    async (newSorting) => {
+      const { orderBy: newOrderBy, orderDirection: newOrderDirection } =
+        sortingOptions[newSorting] || sortingOptions.LATEST;
 
-    try {
-      await refetch({
-        orderBy: newOrderBy,
-        orderDirection: newOrderDirection
-      });
-    } catch (e) {
-      console.error('Error changing sorting:', e);
-    }
-  }, [refetch]);
+      setOrderBy(newOrderBy);
+      setOrderDirection(newOrderDirection);
 
-  const repositories = data?.repositories?.edges?.map(edge => edge.node) ?? [];
+      try {
+        await refetch({
+          orderBy: newOrderBy,
+          orderDirection: newOrderDirection,
+          searchKeyword: debouncedSearchQuery
+        });
+      } catch (e) {
+        console.error('Error changing sorting:', e);
+      }
+    },
+    [refetch, debouncedSearchQuery]
+  );
+
+  const repositories = data?.repositories?.edges?.map((edge) => edge.node) ?? [];
 
   return {
     repositories,
     loading,
     error,
-    setSorting
+    setSorting,
+    searchQuery,
+    setSearchQuery,
+    refetch
   };
 };
 
