@@ -9,6 +9,7 @@ const theme = {
     backgroundPrimary: '#24292e',
     backgroundSecondary: '#e1e4e8',
     backgroundWhite: '#ffffff',
+    backgroundBlack: '#000',
     backgroundSuccess: '#28a745',
   },
   fontSizes: {

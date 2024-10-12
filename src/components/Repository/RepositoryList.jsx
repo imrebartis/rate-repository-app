@@ -1,76 +1,80 @@
-import { FlatList, View, StyleSheet, Pressable } from 'react-native';
-import { useQuery } from '@apollo/client';
+import { useState, memo, useCallback } from 'react';
+import { FlatList, View, StyleSheet } from 'react-native';
+import {
+  Provider as PaperProvider,
+} from 'react-native-paper';
 import { useNavigate } from 'react-router-native';
-import { GET_REPOSITORIES } from '../../graphql/queries';
-import RepositoryItem from './RepositoryItem';
+import useRepositories from '../../hooks/useRepositories';
+import RepositoryListItem from './RepositoryListItem';
 import Loading from '../Loading';
 import Error from '../Error';
 import theme from '../../theme';
+import ItemSeparator from './ItemSeparator';
+import SortingMenu from './SortingMenu/SortingMenu';
 
 const styles = StyleSheet.create({
-  separator: {
-    height: 10
-  },
   container: {
-    backgroundColor: theme.colors.backgroundSecondary
+    backgroundColor: theme.colors.backgroundWhite,
+    flex: 1
+  },
+  menuContainer: {
+    zIndex: 1
   }
 });
 
-const ItemSeparator = () => <View style={styles.separator} />;
-
-export const RepositoryListContainer = ({
-  data,
-  error,
-  loading,
-  onRepositoryPress
-}) => {
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (error) {
-    return <Error error={error.message} />;
-  }
-
-  const repositoryNodes = data.repositories
-    ? data.repositories.edges.map((edge) => edge.node)
-    : [];
-
-  const renderItem = ({ item }) => (
-    <Pressable onPress={() => onRepositoryPress(item.id)}>
-      <RepositoryItem item={item} />
-    </Pressable>
-  );
-
-  return (
-    <FlatList
-      style={styles.container}
-      data={repositoryNodes}
-      ItemSeparatorComponent={ItemSeparator}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-    />
-  );
-};
-
 const RepositoryList = () => {
   const navigate = useNavigate();
-  const { data, error, loading } = useQuery(GET_REPOSITORIES, {
-    fetchPolicy: 'cache-and-network'
-  });
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [sorting, setSorting] = useState('LATEST');
 
-  const onRepositoryPress = (id) => {
-    navigate(`/${id}`);
-  };
+  const { repositories, loading, error, setSorting: setRepositoriesSorting } = useRepositories();
+
+  const handleSortingChange = useCallback(async (newSorting) => {
+    setSorting(newSorting);
+    await setRepositoriesSorting(newSorting);
+    setMenuVisible(false);
+  }, [setRepositoriesSorting]);
+
+  const openMenu = useCallback(() => setMenuVisible(true), []);
+  const closeMenu = useCallback(() => setMenuVisible(false), []);
+
+  const renderItem = useCallback(({ item }) => (
+    <RepositoryListItem
+      item={item}
+      onPress={() => navigate(`/repository/${item.id}`)}
+    />
+  ), [navigate]);
+
+  const keyExtractor = useCallback((item) => item.id, []);
+
+  if (error) return <Error message={error.message} />;
 
   return (
-    <RepositoryListContainer
-      data={data}
-      error={error}
-      loading={loading}
-      onRepositoryPress={onRepositoryPress}
-    />
+    <PaperProvider>
+      <View style={styles.container}>
+        <View style={styles.menuContainer}>
+          <SortingMenu
+            visible={menuVisible}
+            closeMenu={closeMenu}
+            openMenu={openMenu}
+            currentSorting={sorting}
+            setSorting={handleSortingChange}
+            loading={loading}
+          />
+        </View>
+        {loading && repositories.length === 0 ? (
+          <Loading />
+        ) : (
+          <FlatList
+            data={repositories}
+            ItemSeparatorComponent={ItemSeparator}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+          />
+        )}
+      </View>
+    </PaperProvider>
   );
 };
 
-export default RepositoryList;
+export default memo(RepositoryList);

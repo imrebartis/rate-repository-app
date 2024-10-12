@@ -1,38 +1,61 @@
-import { useState, useEffect } from 'react';
-import Constants from 'expo-constants';
+import { useState, useCallback } from 'react';
+import { useQuery } from '@apollo/client';
+import { GET_REPOSITORIES } from '../graphql/queries';
 
 const useRepositories = () => {
-  const [repositories, setRepositories] = useState();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState();
+  const [orderBy, setOrderBy] = useState('CREATED_AT');
+  const [orderDirection, setOrderDirection] = useState('DESC');
 
-  const fetchRepositories = async () => {
-    const response = await fetch(`${Constants.expoConfig.extra.APOLLO_URI}:5000/api/repositories`);
-    const json = await response.json();
+  const { data, loading, error, refetch } = useQuery(GET_REPOSITORIES, {
+    variables: {
+      orderBy,
+      orderDirection
+    },
+    fetchPolicy: 'cache-and-network'
+  });
 
-    console.log(json);
+  const setSorting = useCallback(async (newSorting) => {
+    let newOrderBy, newOrderDirection;
 
-    setRepositories(json);
+    switch (newSorting) {
+    case 'LATEST':
+      newOrderBy = 'CREATED_AT';
+      newOrderDirection = 'DESC';
+      break;
+    case 'HIGHEST_RATED':
+      newOrderBy = 'RATING_AVERAGE';
+      newOrderDirection = 'DESC';
+      break;
+    case 'LOWEST_RATED':
+      newOrderBy = 'RATING_AVERAGE';
+      newOrderDirection = 'ASC';
+      break;
+    default:
+      newOrderBy = 'CREATED_AT';
+      newOrderDirection = 'DESC';
+    }
+
+    setOrderBy(newOrderBy);
+    setOrderDirection(newOrderDirection);
+
+    try {
+      await refetch({
+        orderBy: newOrderBy,
+        orderDirection: newOrderDirection
+      });
+    } catch (e) {
+      console.error('Error changing sorting:', e);
+    }
+  }, [refetch]);
+
+  const repositories = data?.repositories?.edges?.map(edge => edge.node) ?? [];
+
+  return {
+    repositories,
+    loading,
+    error,
+    setSorting
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        await fetchRepositories();
-      } catch (err) {
-        setError('Failed to fetch data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  return { repositories, loading, error };
 };
 
 export default useRepositories;
