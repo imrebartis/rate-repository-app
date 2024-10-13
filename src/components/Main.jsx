@@ -9,6 +9,7 @@ import SingleRepository from './Repository/SingleRepository';
 import ReviewForm from './ReviewForm';
 import Notify from './Notify';
 import SignUp from './SignUp';
+import ReviewList from './Repository/Reviews/ReviewList';
 
 const styles = StyleSheet.create({
   container: {
@@ -44,6 +45,8 @@ const Main = () => {
           path='/create-review'
           element={<ReviewForm setSuccess={notifySuccess} />}
         />
+        <Route path='/my-reviews'
+          element={<ReviewList />} />
         <Route path='/signup'
           element={<SignUp setSuccess={notifySuccess} />} />
         <Route path='*'

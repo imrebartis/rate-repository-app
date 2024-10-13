@@ -1,10 +1,9 @@
 import { useState, memo, useCallback } from 'react';
-import { FlatList, View, StyleSheet } from 'react-native';
+import { FlatList, View, StyleSheet, ActivityIndicator } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { useNavigate } from 'react-router-native';
 import useRepositories from '../../hooks/useRepositories';
 import RepositoryListItem from './RepositoryListItem';
-import Loading from '../Loading';
 import Error from '../Error';
 import theme from '../../theme';
 import ItemSeparator from './ItemSeparator';
@@ -20,10 +19,8 @@ const styles = StyleSheet.create({
   menuContainer: {
     zIndex: 1
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
+  loadingIndicator: {
+    marginTop: 20
   },
   noRepositoriesText: {
     textAlign: 'center',
@@ -31,20 +28,18 @@ const styles = StyleSheet.create({
   }
 });
 
-const RepositoryList = () => {
-  const navigate = useNavigate();
+export const RepositoryListContainer = ({
+  repositories,
+  loading,
+  error,
+  setSorting: setRepositoriesSorting,
+  searchQuery,
+  setSearchQuery,
+  refetch,
+  onRepositoryPress
+}) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [sorting, setSorting] = useState('LATEST');
-
-  const {
-    repositories,
-    loading,
-    error,
-    setSorting: setRepositoriesSorting,
-    searchQuery,
-    setSearchQuery,
-    refetch
-  } = useRepositories();
 
   const handleSortingChange = useCallback(
     async (newSorting) => {
@@ -62,10 +57,10 @@ const RepositoryList = () => {
     ({ item }) => (
       <RepositoryListItem
         item={item}
-        onPress={() => navigate(`/${item.id}`)}
+        onPress={() => onRepositoryPress(item.id)}
       />
     ),
-    [navigate]
+    [onRepositoryPress]
   );
 
   const handleSetSearchQuery = useCallback(
@@ -96,9 +91,8 @@ const RepositoryList = () => {
             />
           </View>
           {loading && repositories.length === 0 ? (
-            <View style={styles.loadingContainer}>
-              <Loading />
-            </View>
+            <ActivityIndicator style={styles.loadingIndicator}
+              size='large' />
           ) : repositories.length === 0 ? (
             <Text
               style={styles.noRepositoriesText}
@@ -120,6 +114,39 @@ const RepositoryList = () => {
         </View>
       </PaperProvider>
     </>
+  );
+};
+
+const RepositoryList = () => {
+  const navigate = useNavigate();
+  const {
+    repositories,
+    loading,
+    error,
+    setSorting: setRepositoriesSorting,
+    searchQuery,
+    setSearchQuery,
+    refetch
+  } = useRepositories();
+
+  const handleRepositoryPress = useCallback(
+    (id) => {
+      navigate(`/${id}`);
+    },
+    [navigate]
+  );
+
+  return (
+    <RepositoryListContainer
+      repositories={repositories}
+      loading={loading}
+      error={error}
+      setSorting={setRepositoriesSorting}
+      setSearchQuery={setSearchQuery}
+      searchQuery={searchQuery}
+      refetch={refetch}
+      onRepositoryPress={handleRepositoryPress}
+    />
   );
 };
 

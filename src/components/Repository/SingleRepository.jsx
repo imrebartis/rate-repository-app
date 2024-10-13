@@ -1,18 +1,20 @@
 import { useCallback, useMemo } from 'react';
-import { StyleSheet, FlatList } from 'react-native';
+import { StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useParams } from 'react-router-native';
 import { useQuery } from '@apollo/client';
 import { GET_REPOSITORY, GET_REVIEWS } from '../../graphql/queries';
-import Loading from '../Loading';
 import Error from '../Error';
 import Text from '../Text';
 import RepositoryInfo from './RepositoryInfo';
-import ReviewItem from './ReviewItem';
+import ReviewItem from './Reviews/ReviewItem';
 import ItemSeparator from './ItemSeparator';
 
 const styles = StyleSheet.create({
   noReviewsText: {
     textAlign: 'center'
+  },
+  loadingIndicator: {
+    marginTop: 20
   }
 });
 
@@ -55,7 +57,8 @@ const SingleRepository = () => {
   );
 
   if (repositoryLoading || reviewLoading) {
-    return <Loading />;
+    return <ActivityIndicator style={styles.loadingIndicator}
+      size='large' />;
   }
 
   if (repositoryError || reviewError) {

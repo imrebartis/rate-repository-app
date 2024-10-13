@@ -1,6 +1,6 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useQuery, useApolloClient } from '@apollo/client';
-import { GET_USER } from '../../graphql/queries';
+import { GET_CURRENT_USER } from '../../graphql/queries';
 import Constants from 'expo-constants';
 import AppBarTab from './AppBarTab';
 import theme from '../../theme';
@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
 });
 
 const AppBar = ({ setSuccess }) => {
-  const { data } = useQuery(GET_USER);
+  const { data } = useQuery(GET_CURRENT_USER);
   const authStorage = useAuthStorage();
   const apolloClient = useApolloClient();
 
@@ -37,6 +37,8 @@ const AppBar = ({ setSuccess }) => {
           <AppBarTab to='/create-review'
             text='Create a Review' />
         ) : null}
+        {data?.me ? <AppBarTab to='/my-reviews'
+          text='My Reviews' /> : null}
         {data?.me ? (
           <AppBarTab to='/signin'
             text='Sign Out'
@@ -45,10 +47,8 @@ const AppBar = ({ setSuccess }) => {
           <AppBarTab to='/signin'
             text='Sign In' />
         )}
-        {!data?.me ? (
-          <AppBarTab to='/signup'
-            text='Sign Up' />
-        ) : null}
+        {!data?.me ? <AppBarTab to='/signup'
+          text='Sign Up' /> : null}
       </ScrollView>
     </View>
   );

@@ -19,13 +19,14 @@ export const SignInForm = ({ onSubmit, submitButtonText }) => {
       validationSchema={validationSchema}
       onSubmit={onSubmit}
       fields={fields}
-      submitButtonText='Sign in'
+      submitButtonText={submitButtonText}
     />
   );
 };
 
 const SignIn = ({ setSuccess, submitButtonText }) => {
   const [signIn] = useSignIn();
+  submitButtonText = 'Sign in';
 
   return (
     <SignInForm

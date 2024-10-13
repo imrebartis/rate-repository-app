@@ -26,9 +26,13 @@ const useSignIn = () => {
       return data;
     } catch (error) {
       console.error('Error signing in:', error);
-      throw new Error(
-        'Failed to sign in. Please check your credentials and try again.'
-      );
+      if (error.networkError) {
+        throw new Error('Network error: Failed to fetch. Please check your internet connection and try again.');
+      } else if (error.graphQLErrors && error.graphQLErrors[0].message === 'Invalid credentials') {
+        throw new Error('Failed to sign in. Please check your credentials and try again.');
+      } else {
+        throw new Error('An unexpected error occurred. Please try again later.');
+      }
     }
   };
 

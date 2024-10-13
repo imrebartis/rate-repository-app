@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react-native';
+import { render, screen, waitFor } from '@testing-library/react-native';
 import { RepositoryListContainer } from '../components/Repository/RepositoryList';
 
 const formatCount = (count) => {
@@ -7,7 +7,7 @@ const formatCount = (count) => {
 
 describe('RepositoryList', () => {
   describe('RepositoryListContainer', () => {
-    it('renders repository information correctly', () => {
+    it('renders repository information correctly', async () => {
       const repositories = {
         repositories: {
           totalCount: 8,
@@ -53,31 +53,38 @@ describe('RepositoryList', () => {
         }
       };
 
-      render(<RepositoryListContainer data={repositories} />);
-
-      const repositoryItems = screen.getAllByTestId('repositoryItem');
-      const [firstRepositoryItem, secondRepositoryItem] = repositoryItems;
-
-      const checkRepositoryItem = (repositoryItem, repository) => {
-        const { getByText } = within(repositoryItem);
-
-        expect(getByText(repository.fullName)).toBeTruthy();
-        expect(getByText(repository.description)).toBeTruthy();
-        expect(getByText(repository.language)).toBeTruthy();
-        expect(getByText(formatCount(repository.forksCount))).toBeTruthy();
-        expect(getByText(formatCount(repository.stargazersCount))).toBeTruthy();
-        expect(getByText(repository.ratingAverage.toString())).toBeTruthy();
-        expect(getByText(repository.reviewCount.toString())).toBeTruthy();
-      };
-
-      checkRepositoryItem(
-        firstRepositoryItem,
-        repositories.repositories.edges[0].node
+      render(
+        <RepositoryListContainer
+          repositories={repositories.repositories.edges.map(
+            (edge) => edge.node
+          )}
+          loading={false}
+          error={null}
+          setSorting={() => {}}
+          setSearchQuery={() => {}}
+          searchQuery=''
+          refetch={() => {}}
+          onRepositoryPress={() => {}}
+        />
       );
-      checkRepositoryItem(
-        secondRepositoryItem,
-        repositories.repositories.edges[1].node
-      );
+
+      await waitFor(() => {
+        const repositoryItems = screen.getAllByTestId('repositoryItem');
+        expect(repositoryItems).toHaveLength(2);
+
+        repositories.repositories.edges.forEach((edge, index) => {
+          const repo = edge.node;
+          const repoItem = repositoryItems[index];
+
+          expect(repoItem).toHaveTextContent(repo.fullName);
+          expect(repoItem).toHaveTextContent(repo.description);
+          expect(repoItem).toHaveTextContent(repo.language);
+          expect(repoItem).toHaveTextContent(formatCount(repo.forksCount));
+          expect(repoItem).toHaveTextContent(formatCount(repo.stargazersCount));
+          expect(repoItem).toHaveTextContent(repo.ratingAverage.toString());
+          expect(repoItem).toHaveTextContent(repo.reviewCount.toString());
+        });
+      });
     });
   });
 });
