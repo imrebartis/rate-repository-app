@@ -59,6 +59,9 @@ export const GET_REVIEWS = gql`
             text
             rating
             createdAt
+            repository {
+              url
+            }
             user {
               id
               username
@@ -82,6 +85,9 @@ export const GET_CURRENT_USER = gql`
             text
             rating
             createdAt
+            repository {
+              url
+            }
             user {
               id
               username

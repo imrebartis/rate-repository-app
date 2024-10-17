@@ -14,9 +14,9 @@ const styles = StyleSheet.create({
   }
 });
 
-const Button = ({ onPress, title }) => {
+const Button = ({ onPress, title, backgroundColor = theme.colors.primary }) => {
   return (
-    <Pressable style={styles.button}
+    <Pressable style={[styles.button, { backgroundColor }]}
       onPress={onPress}>
       <Text color='textWhite'
         fontWeight='bold'>

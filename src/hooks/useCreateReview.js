@@ -1,7 +1,7 @@
 import { useMutation } from '@apollo/client';
 import { CREATE_REVIEW } from '../graphql/mutations';
 import { useNavigate } from 'react-router-native';
-import useAuthStorage from '../hooks/useAuthStorage';
+import useAuthStorage from './useAuthStorage';
 
 const useCreateReview = () => {
   const [mutate, result] = useMutation(CREATE_REVIEW);

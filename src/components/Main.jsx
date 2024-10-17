@@ -40,7 +40,7 @@ const Main = () => {
           element={<RepositoryList />}
           exact />
         <Route path='/:id'
-          element={<SingleRepository />} />
+          element={<SingleRepository setSuccess={notifySuccess} />} />
         <Route
           path='/create-review'
           element={<ReviewForm setSuccess={notifySuccess} />}

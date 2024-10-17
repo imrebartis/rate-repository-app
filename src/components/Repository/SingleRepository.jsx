@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
   }
 });
 
-const SingleRepository = () => {
+const SingleRepository = ({ setSuccess }) => {
   const { id } = useParams();
   const {
     data: repositoryData,
@@ -42,7 +42,8 @@ const SingleRepository = () => {
     [reviewData]
   );
 
-  const renderItem = useCallback(({ item }) => <ReviewItem review={item} />, []);
+  const renderItem = useCallback(({ item }) => <ReviewItem review={item}
+    setSuccess={setSuccess} />, []);
 
   const ListHeaderComponent = useCallback(
     () => (
