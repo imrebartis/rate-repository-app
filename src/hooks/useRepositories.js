@@ -1,57 +1,79 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_REPOSITORIES } from '../graphql/queries';
 import { useDebounce } from 'use-debounce';
 
-const useRepositories = (initialSearchQuery = '') => {
-  const [orderBy, setOrderBy] = useState('CREATED_AT');
-  const [orderDirection, setOrderDirection] = useState('DESC');
+const SORTING_OPTIONS = {
+  LATEST: { orderBy: 'CREATED_AT', orderDirection: 'DESC' },
+  HIGHEST_RATED: { orderBy: 'RATING_AVERAGE', orderDirection: 'DESC' },
+  LOWEST_RATED: { orderBy: 'RATING_AVERAGE', orderDirection: 'ASC' }
+};
+
+const useRepositories = ({
+  initialOrderBy = 'CREATED_AT',
+  initialOrderDirection = 'DESC',
+  initialSearchQuery = '',
+  initialFirst = 10
+} = {}) => {
+  const [orderBy, setOrderBy] = useState(initialOrderBy);
+  const [orderDirection, setOrderDirection] = useState(initialOrderDirection);
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const [first] = useState(initialFirst);
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
-  const { data, loading, error, refetch } = useQuery(GET_REPOSITORIES, {
-    variables: {
+  const variables = useMemo(
+    () => ({
+      first,
       orderBy,
       orderDirection,
-      searchKeyword: debouncedSearchQuery
-    },
+      searchKeyword: debouncedSearchQuery || ''
+    }),
+    [first, orderBy, orderDirection, debouncedSearchQuery]
+  );
+
+  const {
+    data,
+    loading,
+    error,
+    refetch: apolloRefetch,
+    fetchMore
+  } = useQuery(GET_REPOSITORIES, {
+    variables,
     fetchPolicy: 'cache-and-network'
   });
 
-  useEffect(() => {
-    refetch({
-      orderBy,
-      orderDirection,
-      searchKeyword: debouncedSearchQuery
-    });
-  }, [debouncedSearchQuery, orderBy, orderDirection, refetch]);
-
-  const sortingOptions = {
-    LATEST: { orderBy: 'CREATED_AT', orderDirection: 'DESC' },
-    HIGHEST_RATED: { orderBy: 'RATING_AVERAGE', orderDirection: 'DESC' },
-    LOWEST_RATED: { orderBy: 'RATING_AVERAGE', orderDirection: 'ASC' }
-  };
+  const refetch = useCallback(
+    () => apolloRefetch(variables),
+    [apolloRefetch, variables]
+  );
 
   const setSorting = useCallback(
     async (newSorting) => {
       const { orderBy: newOrderBy, orderDirection: newOrderDirection } =
-        sortingOptions[newSorting] || sortingOptions.LATEST;
+        SORTING_OPTIONS[newSorting] || SORTING_OPTIONS.LATEST;
 
       setOrderBy(newOrderBy);
       setOrderDirection(newOrderDirection);
 
       try {
-        await refetch({
-          orderBy: newOrderBy,
-          orderDirection: newOrderDirection,
-          searchKeyword: debouncedSearchQuery
-        });
+        await refetch();
       } catch (e) {
         console.error('Error changing sorting:', e);
       }
     },
-    [refetch, debouncedSearchQuery]
+    [refetch]
   );
+
+  const handleFetchMore = useCallback(() => {
+    if (!loading && data?.repositories.pageInfo.hasNextPage) {
+      fetchMore({
+        variables: {
+          ...variables,
+          after: data.repositories.pageInfo.endCursor
+        }
+      });
+    }
+  }, [loading, data, fetchMore, variables]);
 
   const repositories = data?.repositories?.edges?.map((edge) => edge.node) ?? [];
 
@@ -62,7 +84,8 @@ const useRepositories = (initialSearchQuery = '') => {
     setSorting,
     searchQuery,
     setSearchQuery,
-    refetch
+    refetch,
+    fetchMore: handleFetchMore
   };
 };
 

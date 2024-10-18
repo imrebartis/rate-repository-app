@@ -36,7 +36,8 @@ export const RepositoryListContainer = ({
   searchQuery,
   setSearchQuery,
   refetch,
-  onRepositoryPress
+  onRepositoryPress,
+  onEndReach
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [sorting, setSorting] = useState('LATEST');
@@ -109,6 +110,8 @@ export const RepositoryListContainer = ({
               keyExtractor={keyExtractor}
               onRefresh={refetch}
               refreshing={loading}
+              onEndReached={onEndReach}
+              onEndReachedThreshold={0.5}
             />
           )}
         </View>
@@ -126,7 +129,8 @@ const RepositoryList = () => {
     setSorting: setRepositoriesSorting,
     searchQuery,
     setSearchQuery,
-    refetch
+    refetch,
+    fetchMore
   } = useRepositories();
 
   const handleRepositoryPress = useCallback(
@@ -135,6 +139,11 @@ const RepositoryList = () => {
     },
     [navigate]
   );
+
+  const onEndReach = useCallback(() => {
+    fetchMore();
+  }
+  , []);
 
   return (
     <RepositoryListContainer
@@ -146,6 +155,7 @@ const RepositoryList = () => {
       searchQuery={searchQuery}
       refetch={refetch}
       onRepositoryPress={handleRepositoryPress}
+      onEndReach={onEndReach}
     />
   );
 };
