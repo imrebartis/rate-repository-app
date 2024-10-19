@@ -1,13 +1,12 @@
-import { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useParams } from 'react-router-native';
-import { useQuery } from '@apollo/client';
-import { GET_REPOSITORY, GET_REVIEWS } from '../../graphql/queries';
 import Error from '../Error';
 import Text from '../Text';
 import RepositoryInfo from './RepositoryInfo';
 import ReviewItem from './Reviews/ReviewItem';
 import ItemSeparator from './ItemSeparator';
+import useRepository from '../../hooks/useRepository';
 
 const styles = StyleSheet.create({
   noReviewsText: {
@@ -20,53 +19,48 @@ const styles = StyleSheet.create({
 
 const SingleRepository = ({ setSuccess }) => {
   const { id } = useParams();
-  const {
-    data: repositoryData,
-    error: repositoryError,
-    loading: repositoryLoading
-  } = useQuery(GET_REPOSITORY, {
-    fetchPolicy: 'cache-and-network',
-    variables: { id }
-  });
-  const {
-    data: reviewData,
-    error: reviewError,
-    loading: reviewLoading
-  } = useQuery(GET_REVIEWS, {
-    fetchPolicy: 'cache-and-network',
-    variables: { id }
+  const { data, error, loading, fetchMore } = useRepository({
+    id
   });
 
+  const repository = data?.repository;
   const reviews = useMemo(
-    () => reviewData?.repository?.reviews?.edges.map((edge) => edge.node) || [],
-    [reviewData]
+    () => repository?.reviews?.edges.map((edge) => edge.node) || [],
+    [repository]
   );
 
-  const renderItem = useCallback(({ item }) => <ReviewItem review={item}
-    setSuccess={setSuccess} />, []);
+  const onEndReached = useCallback(() => {
+    fetchMore();
+  }, [fetchMore]);
+
+  const renderItem = useCallback(
+    ({ item }) => <ReviewItem review={item}
+      setSuccess={setSuccess} />,
+    [setSuccess]
+  );
 
   const ListHeaderComponent = useCallback(
     () => (
       <>
-        <RepositoryInfo repository={repositoryData.repository} />
+        <RepositoryInfo repository={repository} />
         {reviews.length === 0 && (
           <Text style={styles.noReviewsText}>No reviews yet</Text>
         )}
       </>
     ),
-    [repositoryData, reviews.length]
+    [repository, reviews.length]
   );
 
-  if (repositoryLoading || reviewLoading) {
+  if (loading) {
     return <ActivityIndicator style={styles.loadingIndicator}
       size='large' />;
   }
 
-  if (repositoryError || reviewError) {
-    return <Error error={repositoryError?.message || reviewError?.message} />;
+  if (error) {
+    return <Error error={error.message} />;
   }
 
-  if (!repositoryData || !repositoryData.repository) {
+  if (!repository) {
     return <Error error='Unexpected error: repository is missing' />;
   }
 
@@ -77,6 +71,8 @@ const SingleRepository = ({ setSuccess }) => {
       keyExtractor={({ id }) => id}
       ListHeaderComponent={ListHeaderComponent}
       ItemSeparatorComponent={ItemSeparator}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.5}
     />
   );
 };

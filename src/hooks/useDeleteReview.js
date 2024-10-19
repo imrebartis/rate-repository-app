@@ -33,7 +33,6 @@ const useDeleteReview = () => {
         await apolloClient.refetchQueries({
           include: [GET_REPOSITORY, GET_CURRENT_USER, GET_REVIEWS]
         });
-        console.log('Refetch completed');
       }, 5000);
 
       return result;

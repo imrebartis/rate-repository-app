@@ -24,6 +24,11 @@ const createApolloClient = (authStorage) => {
         fields: {
           repositories: relayStylePagination()
         }
+      },
+      Repository: {
+        fields: {
+          reviews: relayStylePagination()
+        }
       }
     }
   });

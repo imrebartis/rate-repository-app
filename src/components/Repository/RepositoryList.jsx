@@ -142,8 +142,7 @@ const RepositoryList = () => {
 
   const onEndReach = useCallback(() => {
     fetchMore();
-  }
-  , []);
+  }, [fetchMore]);
 
   return (
     <RepositoryListContainer

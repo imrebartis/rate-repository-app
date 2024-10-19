@@ -10,8 +10,6 @@ const useSignIn = () => {
   const apolloClient = useApolloClient();
 
   const signIn = async ({ username, password }) => {
-    console.log('Username:', username);
-    console.log('Password:', password);
     try {
       const { data } = await mutate({
         variables: { credentials: { username, password } }
