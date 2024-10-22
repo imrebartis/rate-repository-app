@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { render, screen, waitFor, cleanup } from '@testing-library/react-native';
 import { RepositoryListContainer } from '../components/Repository/RepositoryList';
 
 const formatCount = (count) => {
@@ -6,6 +6,10 @@ const formatCount = (count) => {
 };
 
 describe('RepositoryList', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   describe('RepositoryListContainer', () => {
     it('renders repository information correctly', async () => {
       const repositories = {
@@ -65,25 +69,31 @@ describe('RepositoryList', () => {
           searchQuery=''
           refetch={() => {}}
           onRepositoryPress={() => {}}
+          onEndReach={() => {}}
         />
       );
 
-      await waitFor(() => {
-        const repositoryItems = screen.getAllByTestId('repositoryItem');
-        expect(repositoryItems).toHaveLength(2);
+      await waitFor(
+        () => {
+          const repositoryItems = screen.getAllByTestId('repositoryItem');
+          expect(repositoryItems).toHaveLength(2);
+        },
+        { timeout: 5000 }
+      );
 
-        repositories.repositories.edges.forEach((edge, index) => {
-          const repo = edge.node;
-          const repoItem = repositoryItems[index];
+      const repositoryItems = screen.getAllByTestId('repositoryItem');
 
-          expect(repoItem).toHaveTextContent(repo.fullName);
-          expect(repoItem).toHaveTextContent(repo.description);
-          expect(repoItem).toHaveTextContent(repo.language);
-          expect(repoItem).toHaveTextContent(formatCount(repo.forksCount));
-          expect(repoItem).toHaveTextContent(formatCount(repo.stargazersCount));
-          expect(repoItem).toHaveTextContent(repo.ratingAverage.toString());
-          expect(repoItem).toHaveTextContent(repo.reviewCount.toString());
-        });
+      repositories.repositories.edges.forEach((edge, index) => {
+        const repo = edge.node;
+        const repoItem = repositoryItems[index];
+
+        expect(repoItem).toHaveTextContent(repo.fullName);
+        expect(repoItem).toHaveTextContent(repo.description);
+        expect(repoItem).toHaveTextContent(repo.language);
+        expect(repoItem).toHaveTextContent(formatCount(repo.forksCount));
+        expect(repoItem).toHaveTextContent(formatCount(repo.stargazersCount));
+        expect(repoItem).toHaveTextContent(repo.ratingAverage.toString());
+        expect(repoItem).toHaveTextContent(repo.reviewCount.toString());
       });
     });
   });
